@@ -1,32 +1,34 @@
-import { fetchPhotoByQuary } from "../../photos-api";
+import { fetchImages } from "../../photos-api";
 import { useEffect, useState } from "react";
 import ImageGallery from "../ImageGallery/ImageGallery";
 import SearchBar from "../SearchBar/SearchBar";
 import ImageModal from "../ImageModal/ImageModal";
 import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
-import { ErrorMessage } from "formik";
-import Loader from "../Loader/Loader";
 
-function App() {
-  const [image, setImage] = useState([]);
+import Loader from "../Loader/Loader";
+import ErrorMessage from "../ErrorMassage/ErrorMassage";
+
+const App = () => {
+  const [imgs, setImgs] = useState([]);
   const [query, setQuery] = useState("");
-  const [currentPage, setcurrentPage] = useState(1);
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
-  const [imageUrl, setImageUrl] = useState(null);
   const [modal, setModal] = useState(false);
+  const [imgUrl, setImgsUrl] = useState([]);
 
   useEffect(() => {
     if (!query) {
       return;
     }
+
     const getImages = async () => {
       try {
         setLoading(true);
 
-        const newImg = await fetchPhotoByQuary(query, currentPage);
+        const newImgs = await fetchImages(page, query);
 
-        setImage((prevImages) => [...prevImages, ...newImg]);
+        setImgs((prevImages) => [...prevImages, ...newImgs]);
       } catch (error) {
         setError(true);
       } finally {
@@ -34,44 +36,41 @@ function App() {
       }
     };
     getImages();
-  }, [query, currentPage]);
+  }, [query, page]);
 
   const handleSubmit = (query) => {
     setQuery(query);
-    setImage([]);
-    setcurrentPage(1);
+    setPage(1);
+    setImgs([]);
   };
-
   const handleLoadMore = () => {
-    setcurrentPage(currentPage + 1);
-  };
-
-  const toggle = () => {
-    setModal(!modal);
+    setPage(page + 1);
   };
 
   const openModal = (url) => {
-    setImageUrl(url);
+    setImgsUrl(url);
     toggle();
   };
-
+  const toggle = () => {
+    setModal(!modal);
+  };
   return (
     <div>
       <SearchBar onSubmit={handleSubmit} />
-      {image.length > 0 && <ImageGallery images={image} onClick={openModal} />}
-      {loading && <Loader />}
+      {imgs.length > 0 && <ImageGallery onImgClick={openModal} items={imgs} />}
       {error && <ErrorMessage />}
-      {image.length > 0 && <LoadMoreBtn onClick={handleLoadMore} />}
+      {loading && <Loader />}
+      {imgs.length > 0 && !loading && <LoadMoreBtn onClick={handleLoadMore} />}
       {modal && (
         <ImageModal
-          image={imageUrl}
-          imageModal={modal}
-          item={image}
+          image={imgUrl}
+          imgModal={modal}
+          item={imgs}
           onModalClose={toggle}
         />
       )}
     </div>
   );
-}
+};
 
 export default App;

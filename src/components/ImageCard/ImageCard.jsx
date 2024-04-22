@@ -1,14 +1,19 @@
 const ImageCard = ({
-  img: {
+  item: {
     alt_description,
     urls: { small, regular },
   },
-  onClick,
+  onImgClick,
 }) => {
-  console.log(small);
   return (
     <div>
-      <img onClick={() => onClick(regular)} src={small} alt={alt_description} />
+      <div>
+        <img
+          src={small}
+          alt={alt_description}
+          onClick={() => onImgClick(regular)}
+        />
+      </div>
     </div>
   );
 };

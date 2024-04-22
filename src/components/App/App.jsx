@@ -1,54 +1,75 @@
-import { useState, useEffect } from "react";
-import initialContacts from "../../contacts.json";
-import ContactList from "../ContactList/ContactList";
-import SearchBox from "../SearchBox/SearchBox";
-import ContactForm from "../ContactForm/ContactForm";
-import { nanoid } from "nanoid";
+import { fetchPhotoByQuary } from "../../photos-api";
+import { useEffect, useState } from "react";
+import ImageGallery from "../ImageGallery/ImageGallery";
+import SearchBar from "../SearchBar/SearchBar";
+import ImageModal from "../ImageModal/ImageModal";
+import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
+import { ErrorMessage } from "formik";
+import Loader from "../Loader/Loader";
 
 function App() {
-  const [contacts, setContacts] = useState(() => {
-    const saveContacts = window.localStorage.getItem("contacts-key");
-    if (saveContacts !== null) {
-      return JSON.parse(saveContacts);
-    }
-    return initialContacts;
-  });
-
-  const [search, setSearch] = useState("");
-
-  const searchContacts = contacts.filter((contact) =>
-    contact.name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const deleteContact = (contactId) => {
-    setContacts((deleteContact) => {
-      return deleteContact.filter((contact) => contact.id !== contactId);
-    });
-  };
-
-  const addContact = (newContact) => {
-    console.log(newContact);
-    setContacts((prevContacts) => {
-      return [...prevContacts, { ...newContact, id: nanoid() }];
-    });
-  };
-
-  const initialValues = {
-    id: nanoid(),
-    name: "",
-    number: "",
-  };
+  const [image, setImage] = useState([]);
+  const [query, setQuery] = useState("");
+  const [currentPage, setcurrentPage] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(false);
+  const [imageUrl, setImageUrl] = useState(null);
+  const [modal, setModal] = useState(false);
 
   useEffect(() => {
-    window.localStorage.setItem("contacts-key", JSON.stringify(contacts));
-  }, [contacts]);
+    if (!query) {
+      return;
+    }
+    const getImages = async () => {
+      try {
+        setLoading(true);
+
+        const newImg = await fetchPhotoByQuary(query, currentPage);
+
+        setImage((prevImages) => [...prevImages, ...newImg]);
+      } catch (error) {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    };
+    getImages();
+  }, [query, currentPage]);
+
+  const handleSubmit = (query) => {
+    setQuery(query);
+    setImage([]);
+    setcurrentPage(1);
+  };
+
+  const handleLoadMore = () => {
+    setcurrentPage(currentPage + 1);
+  };
+
+  const toggle = () => {
+    setModal(!modal);
+  };
+
+  const openModal = (url) => {
+    setImageUrl(url);
+    toggle();
+  };
 
   return (
     <div>
-      <h1>Phonebook</h1>
-      <ContactForm value={initialValues} onAdd={addContact} />
-      <SearchBox value={search} onSearch={setSearch} />
-      <ContactList contacts={searchContacts} onDelete={deleteContact} />
+      <SearchBar onSubmit={handleSubmit} />
+      {image.length > 0 && <ImageGallery images={image} onClick={openModal} />}
+      {loading && <Loader />}
+      {error && <ErrorMessage />}
+      {image.length > 0 && <LoadMoreBtn onClick={handleLoadMore} />}
+      {modal && (
+        <ImageModal
+          image={imageUrl}
+          imageModal={modal}
+          item={image}
+          onModalClose={toggle}
+        />
+      )}
     </div>
   );
 }

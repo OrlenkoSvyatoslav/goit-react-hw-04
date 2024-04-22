@@ -1,15 +1,16 @@
-import { Hearts } from "react-loader-spinner";
+import css from "../../components/Loader/Loader.module.css";
+import { MutatingDots } from "react-loader-spinner";
 const Loader = () => {
   return (
-    <div>
-      <Hearts
-        height="50"
-        width="50"
-        color="rgb(81, 88, 212)"
-        ariaLabel="hearts-loading"
-        wrapperStyle={{}}
-        wrapperClass=""
+    <div className={css.loader}>
+      <MutatingDots
         visible={true}
+        height="100"
+        width="100"
+        color="#f6ff00"
+        secondaryColor="#0d00ff"
+        radius="11.5"
+        ariaLabel="mutating-dots-loading"
       />
     </div>
   );

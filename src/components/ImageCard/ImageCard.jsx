@@ -12,6 +12,8 @@ const ImageCard = ({
           src={small}
           alt={alt_description}
           onClick={() => onImgClick(regular)}
+          width={320}
+          height={200}
         />
       </div>
     </div>

@@ -1,6 +1,5 @@
 import Modal from "react-modal";
-
-Modal.setAppElement("#root");
+import css from "../ImageModal/ImageModal.module.css";
 
 const customStyles = {
   content: {
@@ -10,6 +9,7 @@ const customStyles = {
     bottom: "auto",
     marginRight: "-50%",
     transform: "translate(-50%, -50%)",
+    padding: 0,
   },
   overlay: {
     position: "fixed",
@@ -29,7 +29,7 @@ const ImageModal = ({ imgModal, onModalClose, image }) => {
         onRequestClose={onModalClose}
         style={customStyles}
       >
-        <img src={image} />
+        <img className={css.modalImg} src={image} />
       </Modal>
     </div>
   );

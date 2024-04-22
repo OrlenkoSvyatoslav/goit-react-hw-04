@@ -1,10 +1,10 @@
+import css from "../App/App.module.css";
 import { fetchImages } from "../../photos-api";
 import { useEffect, useState } from "react";
 import ImageGallery from "../ImageGallery/ImageGallery";
 import SearchBar from "../SearchBar/SearchBar";
 import ImageModal from "../ImageModal/ImageModal";
 import LoadMoreBtn from "../LoadMoreBtn/LoadMoreBtn";
-
 import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMassage/ErrorMassage";
 
@@ -16,6 +16,7 @@ const App = () => {
   const [error, setError] = useState(false);
   const [modal, setModal] = useState(false);
   const [imgUrl, setImgsUrl] = useState([]);
+  const [notFoundError, setNotFoundError] = useState(false);
 
   useEffect(() => {
     if (!query) {
@@ -25,8 +26,13 @@ const App = () => {
     const getImages = async () => {
       try {
         setLoading(true);
+        setNotFoundError(false);
 
         const newImgs = await fetchImages(page, query);
+
+        if (newImgs.length === 0) {
+          setNotFoundError(true);
+        }
 
         setImgs((prevImages) => [...prevImages, ...newImgs]);
       } catch (error) {
@@ -35,6 +41,7 @@ const App = () => {
         setLoading(false);
       }
     };
+
     getImages();
   }, [query, page]);
 
@@ -43,6 +50,7 @@ const App = () => {
     setPage(1);
     setImgs([]);
   };
+
   const handleLoadMore = () => {
     setPage(page + 1);
   };
@@ -51,15 +59,19 @@ const App = () => {
     setImgsUrl(url);
     toggle();
   };
+
   const toggle = () => {
     setModal(!modal);
   };
+
   return (
-    <div>
+    <div className={css.container}>
       <SearchBar onSubmit={handleSubmit} />
       {imgs.length > 0 && <ImageGallery onImgClick={openModal} items={imgs} />}
+
       {error && <ErrorMessage />}
       {loading && <Loader />}
+      {notFoundError && <p className={css.notFound}>Not found, try again!</p>}
       {imgs.length > 0 && !loading && <LoadMoreBtn onClick={handleLoadMore} />}
       {modal && (
         <ImageModal
